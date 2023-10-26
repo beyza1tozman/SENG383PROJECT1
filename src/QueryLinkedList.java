@@ -62,7 +62,7 @@ public class QueryLinkedList {
         HashSet<String> notWantedDocs = new HashSet<>();
         String[] words = query.split(",");
         boolean wordExists=false;
-        int existenWordCount=0;
+        int existentWordCount=0;
         int notExistentWordCount=0;
 
         for (String word : words) {
@@ -90,7 +90,7 @@ public class QueryLinkedList {
                 walk = walk.nextWord;
             }
             if(wordExists){
-                existenWordCount++;
+                existentWordCount++;
                 wordExists=false;
             }else{
                 notExistentWordCount++;

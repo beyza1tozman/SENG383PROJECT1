@@ -12,7 +12,8 @@ public class Main {
         queryLinkedList.search("science");
         queryLinkedList.load(filePath,queryLinkedList);
         queryLinkedList.search("science,!metadata");
-        queryLinkedList.search("cat,jlkjvkldjf,dog");
+        queryLinkedList.search("cat,dog");
+        queryLinkedList.search("cat,!dream,dog");
 
     }
 }
