@@ -61,6 +61,9 @@ public class QueryLinkedList {
         HashSet<String> result = new HashSet<>();
         HashSet<String> notWantedDocs = new HashSet<>();
         String[] words = query.split(",");
+        boolean wordExists=false;
+        int existenWordCount=0;
+        int notExistentWordCount=0;
 
         for (String word : words) {
             boolean isNotWanted = word.startsWith("!");
@@ -81,10 +84,21 @@ public class QueryLinkedList {
                             result.retainAll(Arrays.asList(docs));
                         }
                     }
+                    wordExists=true;
                     break;
                 }
                 walk = walk.nextWord;
             }
+            if(wordExists){
+                existenWordCount++;
+                wordExists=false;
+            }else{
+                notExistentWordCount++;
+            }
+
+        }
+        if(notExistentWordCount>0){
+            result.clear();
         }
         result.removeAll(notWantedDocs);
         System.out.println("query " + query + "\n" + result + "\n");
