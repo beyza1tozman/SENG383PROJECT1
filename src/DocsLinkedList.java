@@ -3,7 +3,7 @@ public class DocsLinkedList {
     int length;
 
     public void addNewDocNode(String docName){
-        //docName=docName.toLowerCase(); bu satır çok saçma bi şekilde çok bozuyor
+        docName=docName.toLowerCase();
         DocsNode newDocNode=new DocsNode(docName);
         if(head==null) {
             head= newDocNode;
@@ -24,7 +24,6 @@ public class DocsLinkedList {
         DocsNode prev=head;
         int index=0;
         while(walk!=null){
-            walk.docName=walk.docName.toLowerCase();
             if(walk.docName.equals(docName)&&index==0){
                 walk=walk.nextDoc;
                 head.nextDoc=null;
@@ -59,6 +58,7 @@ public class DocsLinkedList {
         return docsString;
     }
     public boolean docsNameExist(String docName){
+        docName=docName.toLowerCase();
         if (head==null) return false;
         DocsNode walk=head;
         while(walk!=null){

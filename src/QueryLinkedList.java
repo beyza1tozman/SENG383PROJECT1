@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.Arrays;
 import java.util.HashSet;
 
 public class QueryLinkedList {
@@ -22,17 +23,19 @@ public class QueryLinkedList {
                 }
                 if (lineWithHashTagCount == 2) {
                     docName = line;
+                    docName=docName.toLowerCase();
                     lineWithHashTagCount = 0;
                     continue;
                 }
                 if (isFirstLine) {
                     docName = line;
+                    docName=docName.toLowerCase();
                     isFirstLine = false;
                 } else {
                     String[] words = line.split("\\s+");
                     for (String word : words) {
                         word = word.replaceAll("[^a-zA-Z]", "").toLowerCase();
-                        if(!word.isEmpty()) {
+                        if(!word.isEmpty()) {//wordum boş deilse ve linkedlistte aynı kelimelere izin vermeme şeyini yaptın sen burada. sciencetan iki tane olmicak mesela query linked listimizde ve bunu kontrol ederek ekliyorsun ama bi de alfabetik olarak ekleme özelliğini de yapabilirsin burada
                             if (!queryWordExists(word)) {//science kelimesi yoksa eklicek. olup olmadığını iyi kontrol edemio sanırım.. yok ediomuş çünkü else kısmına geldi. demek ki science nodu var die
                                 queryLinkedList.addNewQueryNode(word, docName);
                             } else {//science kelimesi varsa . o nodu alıp onun documan linked listinde var mı die bakıcak computer science. varsa eklemicek yoksa eklicek
@@ -50,48 +53,45 @@ public class QueryLinkedList {
         }
     }
 
-    public void search(String query){
-        if(head==null) return;
-        HashSet<String>result=new HashSet<>();
-        String[] words=query.split(",");
-        QueryNode walk=head;
-        for(String word:words){
-            if(word.charAt(0)=='!'){//istemediğimiz kelime ise o kelime linkedlistimizde var mı die gezicez ve olduğu linked listleri
-                word=word.substring(1);
-                walk=head;
-                while(walk!=null){
-                    if(walk.wordValue.equals(word)){//mesela cat kelimesinin olmamasını istiyor cat kelimesini içeren bir node bulduysak. bunun documanlarını gezip hashsette varsa silicez
-                        String[]whatDocumentsThisWordAppear=walk.docsLinkedList.docsLinkedListToString().split(",");
-                        for(String docName:whatDocumentsThisWordAppear){
-                            if(result.contains(docName)){
-                                result.remove(docName);
-                            }
+    public void search(String query) {
+        if (head == null) {
+            return;
+        }
+
+        HashSet<String> result = new HashSet<>();
+        HashSet<String> notWantedDocs = new HashSet<>();
+        String[] words = query.split(",");
+
+        for (String word : words) {
+            boolean isNotWanted = word.startsWith("!");
+            if (isNotWanted) {
+                word = word.substring(1);
+            }
+
+            QueryNode walk = head;
+            while (walk != null) {
+                if (walk.wordValue.equals(word)) {
+                    String[] docs = walk.docsLinkedList.docsLinkedListToString().split(",");
+                    if (isNotWanted) {
+                        notWantedDocs.addAll(Arrays.asList(docs));
+                    } else {
+                        if (result.isEmpty()) {
+                            result.addAll(Arrays.asList(docs));
+                        } else {
+                            result.retainAll(Arrays.asList(docs));
                         }
-                        break;
                     }
-                    walk=walk.nextWord;
+                    break;
                 }
-            }else{//olmasını istediğimiz bi kelime ise
-                walk=head;
-                while(walk!=null){
-                    if(walk.wordValue.equals(word)){
-                        String[]whatDocumentsThisWordAppear=walk.docsLinkedList.docsLinkedListToString().split(",");
-                        for(String docName:whatDocumentsThisWordAppear){
-                            result.add(docName);
-                        }
-                        break;
-                    }
-                    walk=walk.nextWord;
-                }
+                walk = walk.nextWord;
             }
         }
-        System.out.println("query " + query + "\n" + result+"\n");
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath,true))) {//this opens the file in append mode. and with this way we are not overwriting output files content. we are adding new lines to it.
-            //output file boşsa direkt en başa yazabilirsin ama eğer içinde bir şeyler varsa en sonuna gelip sonuna eklemen lazım
+        result.removeAll(notWantedDocs);
+        System.out.println("query " + query + "\n" + result + "\n");
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath, true))) {
             writer.write("query " + query + "\n" + result);
             writer.newLine();
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -119,22 +119,31 @@ public class QueryLinkedList {
         }
 
     }
-    public void addNewQueryNode(String word,String docName){
-        QueryNode newQueryNode=new QueryNode(word);
-        DocsLinkedList newDocsLinkedList=new DocsLinkedList();
+    public void addNewQueryNode(String word, String docName) {
+        QueryNode newQueryNode = new QueryNode(word);
+        DocsLinkedList newDocsLinkedList = new DocsLinkedList();
         newDocsLinkedList.addNewDocNode(docName);
-        newQueryNode.docsLinkedList=newDocsLinkedList;
-        if(this.head==null){
-            this.head= newQueryNode;
-        }else{
-            QueryNode walk=this.head;
-            while(walk.nextWord!=null){
-                walk=walk.nextWord;
-            }
-            walk.nextWord=newQueryNode;
-        }
+        newQueryNode.docsLinkedList = newDocsLinkedList;
 
+        if (this.head == null) {
+            this.head = newQueryNode;
+        } else if (word.compareTo(head.wordValue) < 0) {
+            newQueryNode.nextWord = head;
+            this.head = newQueryNode;
+        } else {
+            QueryNode current = head;
+            QueryNode prev = null;
+            while (current != null && word.compareTo(current.wordValue) > 0) {
+                prev = current;
+                current = current.nextWord;
+            }
+            if (prev != null) {
+                prev.nextWord = newQueryNode;
+            }
+            newQueryNode.nextWord = current;
+        }
     }
+
     public boolean queryWordExists(String query){
         if(head==null) return false;
         QueryNode walk=head;
